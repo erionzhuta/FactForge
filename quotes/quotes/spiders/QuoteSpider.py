@@ -9,7 +9,7 @@ from quotes.items import QuotesItem
 
 class QuotespiderSpider(scrapy.Spider):
     txt = '.txt'  # file extension
-    all = False  # scrape all pages or just the first page
+    all = True  # scrape all pages or just the first page
     # name of the file to be saved (File Name)
     fn = 'quotes.toscrape'
     # the site it will scrape (Domain Name)
@@ -57,6 +57,10 @@ class QuotespiderSpider(scrapy.Spider):
 
     def parse(self, response):
         self.extractData(response)
+        if self.all:
+            next = response.css('li.next > a::attr(href)').extract_first()
+            if next is not None:
+                yield scrapy.Request(response.urljoin(next))
 
     def writeTxt(self, q):
         with codecs.open(self.fn + self.txt, 'a+', encoding='utf-8') as f:
